@@ -1,0 +1,176 @@
+body {
+    font-size: 18px;
+}
+
+span {
+    display: inline-block;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.signin {
+    display: inline;
+    margin-bottom: 0px;
+    font-weight: 300;
+}
+
+.seccion {
+    background: white;
+    border: 1px solid #eeeeee;
+    border-radius: 3px 3px 0 0;
+    margin: 10px 0 30px 0;
+    moz-border-radius: 3px 3px 0 0;
+    padding: 25px 25px;
+    position: relative;
+    webkit-border-radius: 3px 3px 0 0;
+}
+
+.btn {
+    white-space: normal;
+}
+
+.derechaFondo {
+    text-align: right;
+    vertical-align: bottom;
+}
+
+.subtitle {
+    margin-bottom: 15px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.limpiarCampo {
+    position: relative;
+    left: -20px;
+    top: 1px;
+    height: 11px;
+    width: 11px;
+    cursor: pointer;
+}
+
+.separador {
+    height: 10px;
+}
+
+.progreso {
+    width: 300px;
+    text-align: center;
+    height: 60px;
+    background-color: White;
+    position: absolute;
+    top: 40%;
+    left: 40%;
+    display: block;
+    font-size: 12pt;
+
+}
+
+.progresofondo {
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    filter: alpha(opacity=40);
+    opacity: 0.4;
+    -moz-opacity: 0.4;
+    background-color: #d1d5d8;
+}
+
+.imagenMaster {
+    width: 970px;
+    height: 70px;
+}
+
+.headerTable th {
+    font-weight: 700;
+}
+
+.dataTable span {
+    font-weight: 400;
+}
+
+@media all and (max-width: 768px) {
+    img.logo {
+        display: none;
+    }
+}
+
+@media all and (max-width: 1024px) {
+    img.logo {
+        width: 30% !important;
+        height: auto !important;
+    }
+}
+
+@media print {
+    .noPrint {
+        visibility: hidden !important;
+        display: none !important;
+    }
+
+    .reduce {
+        margin-bottom: 0px !important;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+    }
+
+    .reduce-titulo {
+        margin-bottom: 0px !important;
+        margin-top: 0px !important;
+        padding-top: 30px !important;
+        padding-bottom: 20px !important;
+    }
+
+    .font-reduce {
+        font-size: 90%;
+        align-content: center;
+        margin-bottom: 0px;
+        margin-top: 0px;
+    }
+
+    #DivContenedor {
+        font-size: 70%;
+    }
+
+    #body-alert {
+        font-size: 70% !important;
+    }
+
+    img.logo.shcp {
+        height: 10%;
+        width: 10%;
+        display: block;
+        margin-top: 10px !important;
+    }
+
+    ol#noPrint {
+        visibility: hidden !important;
+        display: none !important;
+    }
+
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+
+    a[href]:after {
+        content: '';
+    }
+}
+
+#cuerpo {
+    height: 70px;
+    margin-top: 41px;
+    padding-left: 12px;
+}
+
+.factura {
+    margin-left: 9px;
+    font-weight: lighter;
+    line-height: 25px;
+    font-weight: 300;
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}

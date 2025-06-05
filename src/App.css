@@ -1,11 +1,3 @@
-@import "tailwindcss/preflight";
-
+@tailwind base;
+@tailwind components;
 @tailwind utilities;
-
-.cls-1 {
-    fill: #dac6a1;
-}
-
-.cls-2 {
-    fill: #fff;
-}

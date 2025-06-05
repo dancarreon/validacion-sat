@@ -1,12 +1,12 @@
-import React from 'react';
-import {Header} from "./components/Header.tsx";
-import './App.css';
+import CFDIForm from "./components/CFDIForm.tsx";
+import './assets/styles/main.css';
+import './assets/styles/satMain.css';
+//import './App.css';
 
-const App = () => {
+function App() {
     return (
-        <div className='w-full h-screen'>
-            <Header/>
-        </div>
+        <CFDIForm/>
     )
 }
-export default App
+
+export default App;
