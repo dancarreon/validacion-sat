@@ -161,16 +161,10 @@ span {
     }
 }
 
-#cuerpo {
-    height: 70px;
-    margin-top: 41px;
-    padding-left: 12px;
-}
-
 .factura {
     margin-left: 9px;
     font-weight: lighter;
     line-height: 25px;
     font-weight: 300;
-    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: Montserrat, "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }

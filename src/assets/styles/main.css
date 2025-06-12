@@ -1803,7 +1803,7 @@ pre code {
 .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9 {
     position: relative;
     min-height: 1px;
-    padding-left: 17px;
+    padding-left: 15px;
     padding-right: 15px
 }
 
@@ -3227,8 +3227,8 @@ textarea.form-control {
 }
 
 .form-horizontal .form-group {
-    margin-left: -17px;
-    margin-right: -19px
+    margin-left: -15px;
+    margin-right: -15px
 }
 
 .form-horizontal .form-group:after, .form-horizontal .form-group:before {
@@ -4602,7 +4602,7 @@ tbody.collapse.in {
 .navbar-inverse {
     background-color: #0C231E;
     border-color: transparent;
-    /*font-family: Montserrat;*/
+    font-family: Montserrat;
 }
 
 .navbar-inverse .navbar-brand:focus, .navbar-inverse .navbar-brand:hover {
@@ -6683,16 +6683,16 @@ button.close {
 
 @font-face {
     font-family: icogobmx;
-    src: local(icogobmx) url(/src/fonts/icogobmx.woff) format("woff"), url(/src/fonts/icogobmx.ttf) format("truetype"), url(/src/fonts/icogobmx.svg#icogobmx) format("svg");
     font-weight: 400;
-    font-style: normal
+    font-style: normal;
+    src: url("../fonts/icogobmx.woff");
 }
 
 @font-face {
     font-family: Montserrat;
     font-style: normal;
     font-weight: 300;
-    src: local(Montserrat), url(/src/fonts/montserrat-v14-latin-regular.woff) format("woff"), url(/src/fonts/montserrat-v14-latin-regular.ttf) format("truetype"), url(/src/fonts/montserrat-v14-latin-regular.svg#Montserrat) format("svg");
+    src: url("../fonts/montserrat-v14-latin-regular.woff2") format("woff2");
 }
 
 [class*=" icon-"], [class^=icon-] {
@@ -6934,7 +6934,7 @@ main[role=main] .border-box dl dd {
 }
 
 .top-buffer-submenu {
-    margin-top: 40px
+    margin-top: 20.5px
 }
 
 .small-bottom-buffer {
@@ -7207,7 +7207,7 @@ dt {
         margin-top: 46px;
         width: 100%;
         z-index: 1029;
-        /*font-family: Montserrat;*/
+        font-family: Montserrat;
     }
 
     .sub-navbar .navbar-brand {
@@ -7274,7 +7274,7 @@ dt {
         padding: 20px 0 0px;
         text-align: left;
         font-weight: 300;
-        /*font-family: Montserrat;*/
+        font-family: Montserrat;
         line-height: 3px;
     }
 
@@ -7380,7 +7380,7 @@ dt {
         }
 
         .parrafo-titulo {
-            padding-top: 15px;
+            padding-top: 33px;
         }
     }
 
@@ -8777,11 +8777,11 @@ dt {
         color: #000000;
         font-size: 16px;
         text-align: justify;
-        /*font-family: Montserrat;*/
+        font-family: Montserrat;
     }
 
     #title-modal {
-        /*font-family: Montserrat;*/
+        font-family: Montserrat;
     }
 
     .ui-helper-hidden {
@@ -9467,7 +9467,7 @@ dt {
 }
 
 .text-decoration-none {
-    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: Montserrat, "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 300;
     font-size: 16px;
     text-decoration: none !important;

@@ -1,17 +1,16 @@
 import React, {useEffect, useState} from 'react';
+import {type SubmitHandler, useForm} from 'react-hook-form';
+import {z, type ZodType} from 'zod';
+import {zodResolver} from "@hookform/resolvers/zod";
+import {useParams} from 'react-router';
+import type {Traza} from "../api/types/traza-types.ts";
+import {getTraza} from "../api/trazas-api.ts";
 
-interface FormData {
+interface CFDIData {
     uuid: string;
     rfcEmisor: string;
     rfcReceptor: string;
     captchaNumbers: string;
-}
-
-interface ErrorState {
-    uuid: boolean;
-    rfcEmisor: boolean;
-    rfcReceptor: boolean;
-    captchaNumbers: boolean;
 }
 
 const imagenes = [
@@ -23,144 +22,118 @@ const imagenes = [
     '/images/GeneraCaptcha6.jpeg'
 ];
 
+const CFDISchema: ZodType = z.object({
+    uuid: z.string({
+        required_error: "Este campo es obligatorio",
+    }).min(36, "Este campo es obligatorio"),
+    rfcEmisor: z.string({
+        required_error: "Este campo es obligatorio",
+    }).min(1, "Este campo es obligatorio").regex(/^([A-ZÑ&]{3,4})(\d{2})(\d{2})(\d{2})([A-Z\d]{3})?$/i),
+    rfcReceptor: z.string({
+        required_error: "Este campo es obligatorio",
+    }).min(1, "Este campo es obligatorio").regex(/^([A-ZÑ&]{3,4})(\d{2})(\d{2})(\d{2})([A-Z\d]{3})?$/i),
+    captchaNumbers: z.string({
+        required_error: "Este campo es obligatorio",
+    }).min(1, "ERROR: Los valores que aparecen en la imagen son dígitos, favor de ingresarlos nuevamente"),
+})
+
 const CFDIForm: React.FC = () => {
 
-    const [formData, setFormData] = useState<FormData>({
-        uuid: '',
-        rfcEmisor: '',
-        rfcReceptor: '',
-        captchaNumbers: ''
-    });
-
-    const [errors, setErrors] = useState<ErrorState>({
-        uuid: false,
-        rfcEmisor: false,
-        rfcReceptor: false,
-        captchaNumbers: false
-    });
-
+    const {cfdi} = useParams();
     const [captchaImage, setCaptchaImage] = useState<string>('');
+    const [record, setRecord] = useState<Traza>({} as Traza);
+    const [validRecord, setValidRecord] = useState<boolean>(false);
 
-    useEffect(() => {
-        mostrarImagenAleatoria();
-    }, []);
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        getValues,
+        formState: {errors},
+    } = useForm<CFDIData>({
+        resolver: zodResolver(CFDISchema),
+    });
+
+    const onSubmit: SubmitHandler<CFDIData> = async () => {
+        setValidRecord(true);
+        //window.location.href = 'https://verificacfdi-facturaelectronica.com.mx/default.aspx/2--.html';
+    };
 
     const mostrarImagenAleatoria = () => {
         const indiceAleatorio = Math.floor(Math.random() * imagenes.length);
         setCaptchaImage(imagenes[indiceAleatorio]);
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
-
-        if (name === 'uuid') {
-            //const formattedValue = formatAsGUID(value);
-            updateFormData(name, value);
-            return;
-        } else {
-            updateFormData(name, value);
-        }
-    };
-
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         const key = e.key;
-        //const value = e.currentTarget.value;
-        const input = e.currentTarget;
-        const cursorIndex = input.selectionStart ?? 0;
 
-        /*console.log(cursorIndex);
-        console.log(e.currentTarget.value, key);
-        console.log(`Key pressed: ${key}, Current value: ${value}`);*/
+        if (key === 'Backspace' || key === 'Delete' || key === 'ArrowLeft' || key === 'ArrowRight' || key === 'Insert' || key === 'Tab' || key === 'Home') {
+            return;
+        }
 
-        if (!/^[A-Fa-f0-9]$/.test(key) && key !== 'Backspace') {
+        if (!/^[A-Fa-f0-9]$/.test(key)) {
             e.preventDefault();
         } else {
-            /*
-            const splitArray = value.split('-').map((part: string) => part.replace(/_/g, ''));
-            console.log(splitArray);
+            if (e.currentTarget.value === '') {
+                e.currentTarget.value = key + '_______-____-____-____-____________';
+                e.currentTarget.setSelectionRange(0, 1);
+            } else {
+                const indexInput = e.currentTarget.selectionStart || 0;
+                const newValue = replaceCharAt(e.currentTarget.value, indexInput, key);
 
-            const parts = [8, 4, 4, 4, 12];
-
-            let result = '';
-            let len = 0;
-
-            for (let i = 0; i < parts.length; i++) {
-                if (i > 0) {
-                    result += '-';
-                }
-                if (i < splitArray.length) {
-
-                    len += parts[i];
-
-                    console.log(cursorIndex);
-
-                    if (cursorIndex <= len) {
-                        const part = splitArray[i].substring(0, cursorIndex) + key + splitArray[i].substring(cursorIndex + 1, parts[i]).padEnd(parts[i], '_');
-                        result += part;
-                        console.log(result);
-                    }
+                e.currentTarget.value = formatToGUID(newValue);
+                if (indexInput === 8 || indexInput === 13 || indexInput === 18 || indexInput === 23) {
+                    e.currentTarget.setSelectionRange(indexInput + 1, indexInput + 2);
+                } else {
+                    e.currentTarget.setSelectionRange(indexInput + 1, indexInput + 1);
                 }
             }
-
-            e.currentTarget.value = result;
-            */
         }
-
-        //e.currentTarget.focus();
-        e.currentTarget.setSelectionRange(cursorIndex, cursorIndex);
     }
 
-    /*
-    function formatAsGUID(input: string): string {
-        // Remove any non-hex characters
-        const clean = input.replace(/[^A-Fa-f0-9]/g, '');
-
-        // Define how many characters per group
-        const parts = [8, 4, 4, 4, 12];
-
-        let result = '';
-        let index = 0;
-
-        for (let i = 0; i < parts.length; i++) {
-            if (i > 0) result += '-';
-            const part = clean.substr(index, parts[i]).padEnd(parts[i], '_');
-            result += part;
-            index += parts[i];
-        }
-
-        return result;
-    }
-    */
-
-    const updateFormData = (name: string, value: string) => {
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-        validateField(name, value);
+    function replaceCharAt(str: string, index: number, newChar: string): string {
+        if (index < 0 || index >= str.length) return str;
+        return str.slice(0, index) + newChar + str.slice(index + 1);
     }
 
-    const validateField = (name: string, value: string) => {
-        let isValid = true;
-        if (!value.trim()) {
-            isValid = false;
+    function formatToGUID(value: string): string {
+        // Remove dashes only if the value is not empty
+        value = value.replace(/-/g, '');
+        // Loop through the string and format it as a GUID
+        let formattedValue = '';
+        for (let i = 0; i < value.length; i++) {
+            if (i === 8 || i === 12 || i === 16 || i === 20) {
+                formattedValue += '-';
+            }
+            formattedValue += value[i].toUpperCase();
         }
-        if (name === 'uuid' && value === '________-____-____-____-____________') {
-            isValid = false;
+        // If the formatted value is less than 36 characters, pad it with underscores
+        if (formattedValue.length < 36) {
+            return formattedValue.padEnd(36, '_');
         }
-        setErrors(prev => ({
-            ...prev,
-            [name]: !isValid
-        }));
-    };
+        // If the formatted value is more than 36 characters, truncate it
+        if (formattedValue.length > 36) {
+            return formattedValue.slice(0, 36);
+        }
+        return formattedValue;
+    }
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const isValid = Object.values(errors).every(error => !error);
-        if (isValid) {
-            window.location.href = 'https://verificacfdi-facturaelectronica.com.mx/default.aspx/2--.html';
+    useEffect(() => {
+        mostrarImagenAleatoria();
+
+        async function fetchRecord() {
+
+            const record: Traza = await getTraza(String(cfdi));
+            if (record) {
+                setRecord(record);
+                setValue('uuid', String(cfdi));
+            }
         }
-    };
+
+        if (String(cfdi)) {
+            fetchRecord().catch(console.error);
+        }
+    }, [cfdi, setValue]);
 
     return (
         <div>
@@ -207,9 +180,9 @@ const CFDIForm: React.FC = () => {
                 </nav>
             </header>
 
-            <form onSubmit={handleSubmit} className="form-horizontal" role="form">
+            <form onSubmit={handleSubmit(onSubmit)} className="form-horizontal" role="form">
                 <main role="main">
-                    <div id="cuerpo_principal" className="row">
+                    <div id="cuerpo_principal" className="container top-buffer-submenu reduce">
                         <div id="encabezado" className="row">
                             <div id="encabezadoPortal">
                                 <nav className="navbar navbar-inverse sub-navbar navbar-fixed-top">
@@ -233,7 +206,6 @@ const CFDIForm: React.FC = () => {
                                 </nav>
                             </div>
                         </div>
-
                         <div id="cuerpo" className="container top-buffer-submenu">
                             <div className="container">
                                 <div className="row">
@@ -267,13 +239,11 @@ const CFDIForm: React.FC = () => {
                                     <span className="control-label">Folio fiscal</span>
                                     <span className="form-text">*</span>:
                                     <input
-                                        name="uuid"
                                         type="text"
-                                        value={formData.uuid}
                                         maxLength={36}
                                         className="form-control uppercase mascara"
-                                        onChange={handleInputChange}
                                         onKeyDown={handleKeyDown}
+                                        {...register("uuid")}
                                     />
                                     {errors.uuid && (
                                         <small className="form-text form-text-error">Este campo es obligatorio</small>
@@ -283,12 +253,10 @@ const CFDIForm: React.FC = () => {
                                     <span className="control-label">RFC emisor</span>
                                     <span className="form-text">*</span>:
                                     <input
-                                        name="rfcEmisor"
                                         type="text"
-                                        value={formData.rfcEmisor}
                                         maxLength={13}
                                         className="form-control uppercase"
-                                        onChange={handleInputChange}
+                                        {...register("rfcEmisor")}
                                     />
                                     {errors.rfcEmisor && (
                                         <small className="form-text form-text-error">Este campo es obligatorio</small>
@@ -298,12 +266,10 @@ const CFDIForm: React.FC = () => {
                                     <span className="control-label">RFC receptor</span>
                                     <span className="form-text">*</span>:
                                     <input
-                                        name="rfcReceptor"
                                         type="text"
-                                        value={formData.rfcReceptor}
                                         maxLength={13}
                                         className="form-control uppercase"
-                                        onChange={handleInputChange}
+                                        {...register("rfcReceptor")}
                                     />
                                     {errors.rfcReceptor && (
                                         <small className="form-text form-text-error">Este campo es obligatorio</small>
@@ -321,19 +287,16 @@ const CFDIForm: React.FC = () => {
                                     <span className="control-label">Proporcione los dígitos de la imagen</span>
                                     <span className="form-text">*</span>:
                                     <input
-                                        name="captchaNumbers"
                                         type="text"
                                         maxLength={5}
                                         className="form-control"
-                                        onChange={handleInputChange}
+                                        {...register("captchaNumbers")}
                                     />
                                     {errors.captchaNumbers && (
                                         <small className="form-text form-text-error">Este campo es obligatorio</small>
                                     )}
                                 </div>
-                                <div className="col-md-4" style={{
-                                    paddingRight: '13px',
-                                }}>
+                                <div className="col-md-4">
                                     <br/>
                                     <button type="submit" className="btn btn-primary pull-right">
                                         Verificar CFDI
@@ -348,6 +311,177 @@ const CFDIForm: React.FC = () => {
                                     * Datos obligatorios
                                 </div>
                             </div>
+                            {
+                                errors.uuid || errors.rfcEmisor || errors.rfcReceptor || errors.captchaNumbers ? (
+                                    <div className="noPrint">
+                                        <div id="ctl00_MainContent_VsResumenErrores"
+                                             className="col-md-12 alert alert-danger" style={{color: 'red'}}>
+                                            {errors.uuid && (
+                                                <div>
+                                                    ERROR: El folio fiscal no cumple con el formato correcto, favor de
+                                                    ingresarlo nuevamente<br/>
+                                                </div>
+                                            )}
+                                            {errors.rfcEmisor && (
+                                                <div>
+                                                    ERROR: El RFC del emisor proporcionado no es correcto, favor de
+                                                    ingresarlo nuevamente<br/>
+                                                    (13 posiciones para personas físicas y 12 posiciones para personas
+                                                    morales)<br/>
+                                                </div>
+                                            )}
+                                            {errors.rfcReceptor && (
+                                                <div>
+                                                    ERROR: El RFC del receptor proporcionado no es correcto, favor de
+                                                    ingresarlo nuevamente<br/>
+                                                    (13 posiciones para personas físicas y 12 posiciones para personas
+                                                    morales)<br/>
+                                                </div>
+                                            )}
+                                            {errors.captchaNumbers && (
+                                                <div>
+                                                    ERROR: Los valores que aparecen en la imagen son dígitos, favor de
+                                                    ingresarlos nuevamente<br/>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <br/>
+                                    </div>
+                                ) : null
+                            }
+                            {
+                                validRecord ? (
+                                    <div id="ctl00_MainContent_PnlResultados">
+                                        <div className="form-group" id="DivContenedor">
+                                            <div className="col-sm-12" id="ContenedorDinamico"
+                                                 style={{overflow: 'auto'}}>
+                                                <table className="table table-striped">
+                                                    <tbody>
+                                                    <tr className="headerTable">
+                                                        <th>RFC del emisor</th>
+                                                        <th>Nombre o razón social del emisor</th>
+                                                        <th>RFC del receptor</th>
+                                                        <th>Nombre o razón social del receptor</th>
+                                                    </tr>
+                                                    <tr className="dataTable">
+                                                        <td>
+                                                            <span id="ctl00_MainContent_LblRfcEmisor">
+                                                                {getValues('rfcEmisor')}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span id="ctl00_MainContent_LblNombreEmisor">
+                                                                {record.razonSocialComercial?.name}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span id="ctl00_MainContent_LblRfcReceptor">
+                                                                {getValues('rfcReceptor')}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span id="ctl00_MainContent_LblNombreReceptor">
+                                                                {record.razonSocialComercial?.name}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr className="headerTable">
+                                                        <th>Folio fiscal</th>
+                                                        <th>Fecha de expedición</th>
+                                                        <th>Fecha certificación SAT</th>
+                                                        <th>PAC que certificó</th>
+                                                    </tr>
+                                                    <tr className="dataTable">
+                                                        <td>
+                                                            <span id="ctl00_MainContent_LblUuid">
+                                                                {record.folio}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span id="ctl00_MainContent_LblFechaEmision">
+                                                                {String(record.fechaHoraPemex)}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span id="ctl00_MainContent_LblFechaCertificacion">
+                                                                {String(record.fechaHoraPemex)}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span id="ctl00_MainContent_LblRfcPac">
+                                                                {record.claveConcentradora?.clave}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Total del CFDI</th>
+                                                        <th>Efecto del comprobante</th>
+                                                        <th>Estado CFDI</th>
+                                                        <th id="ctl00_MainContent_thDinamico"
+                                                            style={{visibility: 'hidden'}}>Estatus de cancelación
+                                                        </th>
+                                                    </tr>
+                                                    <tr className="dataTable">
+                                                        <td>
+                                                            <span id="ctl00_MainContent_LblMonto">
+                                                                {record.litrosTotales! * record.precioLitro!}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span
+                                                                id="ctl00_MainContent_LblEfectoComprobante">Ingreso</span>
+                                                        </td>
+                                                        <td>
+                                                            <span id="ctl00_MainContent_LblEstado">
+                                                                {record.status === 'ACTIVE' ? 'Vigente' : 'Cancelado'}
+                                                            </span>
+                                                        </td>
+                                                        <td id="ctl00_MainContent_tdDinamico"
+                                                            style={{visibility: 'hidden'}}>
+                                                            <span id="ctl00_MainContent_LblEsCancelable">Cancelable con aceptación</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr className="headerTable">
+                                                        <th id="ctl00_MainContent_thEstatusCancelacion"
+                                                            style={{visibility: 'hidden'}}>Estatus de cancelación
+                                                        </th>
+                                                        <th id="ctl00_MainContent_thFechaCancelacion"
+                                                            style={{visibility: 'hidden'}}>Fecha de Proceso de
+                                                            Cancelación
+                                                        </th>
+                                                        <th style={{visibility: 'hidden'}}></th>
+                                                        <th style={{visibility: 'hidden'}}></th>
+                                                    </tr>
+                                                    <tr className="dataTable">
+                                                        <td id="ctl00_MainContent_tdEstatusCancelacion"
+                                                            style={{visibility: 'hidden'}}>
+                                                            <span id="ctl00_MainContent_LblEstatusCancelacion"></span>
+                                                        </td>
+                                                        <td id="ctl00_MainContent_tdFechaCancelacion"
+                                                            style={{visibility: 'hidden'}}>
+                                                            <span id="ctl00_MainContent_LblFechaCancelacion"></span>
+                                                        </td>
+                                                        <td style={{visibility: 'hidden'}}>
+                                                        </td>
+                                                        <td style={{visibility: 'hidden'}}>
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div className="clearfix">
+                                            <div className="pull-right">
+                                                <input type="hidden" name="ctl00$MainContent$strBusqueda"
+                                                       id="ctl00_MainContent_strBusqueda"
+                                                       value="00E6E380-0016-4493-A965-1FF887608D90|BBA830831LJ2|ZOOL590605TG3"/>
+                                                <input type="button" id="BtnImprimir" value="Imprimir"
+                                                       className="btn btn-primary"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : null
+                            }
                         </div>
                     </div>
                 </main>
@@ -356,8 +490,9 @@ const CFDIForm: React.FC = () => {
                     <div className="list-info footer-container">
                         <div className="container">
                             <div className="row">
-                                <div className="col-sm-3 footer-img">
-                                    <img width="100%" src="/images/logofooter.svg" alt="Logo Footer"/>
+                                <div className="col-sm-3 col-md-3 col-lg-3 footer-img">
+                                    <img src="/images/logofooter.svg" alt="Logo Footer"
+                                         style={{width: '99%', marginLeft: '1px'}}/>
                                 </div>
                                 <div className="col-sm-3 parrafo-enlaces">
                                     <div className="font-calibri text-[16pt] tracking-wider font-light">
@@ -443,28 +578,37 @@ const CFDIForm: React.FC = () => {
                                         </a></li>
                                     </ul>
                                 </div>
-                                <div className="col-sm-3 parrafo-titulo">
-                                    <p className="font-arial text-[18pt] leading-8 tracking-wider font-light">
+                                <div className="col-sm-2 col-md-3 col-lg-3 parrafo-titulo">
+                                    <p>
                                         <a href="https://www.gob.mx/tramites/ficha/presentacion-de-quejas-y-denuncias-en-la-sfp/SFP54"
-                                           className="text-decoration-none" style={{fontSize: "15px"}}>Denuncia contra
-                                            servidores
-                                            públicos</a>
+                                           className="text-decoration-none" style={{fontSize: "15px"}}>
+                                            Denuncia contra servidores públicos
+                                        </a>
                                     </p>
                                     <div className="font-arial text-[18pt] tracking-wider font-light">
                                         <h5>Síguenos en</h5>
                                     </div>
                                     <ul className="list-inline">
-                                        <li><a href="https://www.facebook.com/govmx" target="_blank"
-                                               aria-label="Facebook de presidencia"><img src="/images/facebook.png"
-                                                                                         width="19" height="24"
-                                                                                         alt="Facebook"/></a></li>
-                                        <li><a href="https://twitter.com/govmx" target="_blank"
-                                               aria-label="Twitter de presidencia"><img src="/images/twitter.png"
-                                                                                        width="24" height="24"
-                                                                                        alt="Twitter"/></a></li>
+                                        <li>
+                                            <a href="https://www.facebook.com/govmx" target="_blank"
+                                               aria-label="Facebook de presidencia">
+                                                <img src="/images/facebook.png" width="19" height="24" alt="Facebook"/>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://twitter.com/govmx" target="_blank"
+                                               aria-label="Twitter de presidencia">
+                                                <img src="/images/twitter.png" width="24" height="24" alt="Twitter"/>
+                                            </a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <div className="container-fluid gobmx-footer">
+                        <div className="row">
+                            <div className="col"><br/><br/></div>
                         </div>
                     </div>
                     <img src="/images/pleca.svg" alt="Pleca"/>
